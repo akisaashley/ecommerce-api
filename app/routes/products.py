@@ -15,7 +15,7 @@ def list_products(
     search: str | None = Query(None),
 ):
     params = []
-    where_clause = "WHERE status = 'active'"
+    where_clause = "WHERE 1=1"
 
     if min_stock is not None:
         where_clause += " AND stock_quantity >= %s"
@@ -33,7 +33,7 @@ def list_products(
 
     # Get paginated results
     query = f"""
-        SELECT id, sku, name, description, price, stock_quantity, status, created_at, updated_at
+        SELECT id, sku, name, description, price, stock_quantity, created_at, updated_at
         FROM products
         {where_clause}
         ORDER BY id
@@ -54,7 +54,7 @@ def list_products(
 @router.get("/{product_id}", response_model=dict)
 def get_product(product_id: int):
     product = execute_query(
-        "SELECT id, sku, name, description, price, stock_quantity, status, created_at, updated_at FROM products WHERE id = %s",
+        "SELECT id, sku, name, description, price, stock_quantity, created_at, updated_at FROM products WHERE id = %s",
         (product_id,),
         fetch_one=True,
     )
@@ -86,7 +86,7 @@ def create_product(payload: ProductCreate):
     )
 
     product = execute_query(
-        "SELECT id, sku, name, description, price, stock_quantity, status, created_at, updated_at FROM products WHERE sku = %s",
+        "SELECT id, sku, name, description, price, stock_quantity, created_at, updated_at FROM products WHERE sku = %s",
         (payload.sku,),
         fetch_one=True,
     )
@@ -122,9 +122,6 @@ def update_product(product_id: int, payload: ProductUpdate):
     if payload.stock_quantity is not None:
         updates.append("stock_quantity = %s")
         params.append(payload.stock_quantity)
-    if payload.status is not None:
-        updates.append("status = %s")
-        params.append(payload.status.value)
 
     if updates:
         params.append(product_id)
@@ -135,7 +132,7 @@ def update_product(product_id: int, payload: ProductUpdate):
         )
 
     product = execute_query(
-        "SELECT id, sku, name, description, price, stock_quantity, status, created_at, updated_at FROM products WHERE id = %s",
+        "SELECT id, sku, name, description, price, stock_quantity, created_at, updated_at FROM products WHERE id = %s",
         (product_id,),
         fetch_one=True,
     )

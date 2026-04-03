@@ -1,15 +1,8 @@
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-
-
-class ProductStatus(str, Enum):
-    active = "active"
-    inactive = "inactive"
-    discontinued = "discontinued"
 
 
 class ProductBase(BaseModel):
@@ -38,7 +31,6 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     price: Optional[Decimal] = Field(default=None, gt=0)
     stock_quantity: Optional[int] = Field(default=None, ge=0)
-    status: Optional[ProductStatus] = None
 
     @field_validator('price')
     @classmethod
@@ -51,7 +43,6 @@ class ProductUpdate(BaseModel):
 
 class ProductResponse(ProductBase):
     id: int
-    status: ProductStatus
     created_at: datetime
     updated_at: datetime
 

@@ -32,23 +32,44 @@ def init_connection_pool():
         "database": settings.MYSQL_DATABASE,
         "connection_timeout": settings.MYSQL_CONNECT_TIMEOUT,
         "autocommit": False,
+        "use_pure": True,  # Use pure Python implementation
     }
-
-    connection_pool = pooling.MySQLConnectionPool(
-        pool_name=settings.MYSQL_POOL_NAME,
-        pool_size=settings.MYSQL_POOL_SIZE,
-        pool_reset_session=settings.MYSQL_POOL_RESET_SESSION,
-        **db_config,
-    )
 
     log_json(
         "info",
-        "db_pool_initialized",
-        pool_name=settings.MYSQL_POOL_NAME,
-        pool_size=settings.MYSQL_POOL_SIZE,
+        "db_connecting",
         host=settings.MYSQL_HOST,
+        port=settings.MYSQL_PORT,
         database=settings.MYSQL_DATABASE,
+        user=settings.MYSQL_USER,
     )
+
+    try:
+        connection_pool = pooling.MySQLConnectionPool(
+            pool_name=settings.MYSQL_POOL_NAME,
+            pool_size=settings.MYSQL_POOL_SIZE,
+            pool_reset_session=settings.MYSQL_POOL_RESET_SESSION,
+            **db_config,
+        )
+
+        log_json(
+            "info",
+            "db_pool_initialized",
+            pool_name=settings.MYSQL_POOL_NAME,
+            pool_size=settings.MYSQL_POOL_SIZE,
+            host=settings.MYSQL_HOST,
+            database=settings.MYSQL_DATABASE,
+        )
+    except Exception as e:
+        log_json(
+            "error",
+            "db_connection_failed",
+            error=str(e),
+            host=settings.MYSQL_HOST,
+            port=settings.MYSQL_PORT,
+        )
+        raise
+
     return connection_pool
 
 
@@ -151,7 +172,8 @@ def ping_database() -> bool:
             cursor.fetchone()
             cursor.close()
         return True
-    except Exception:
+    except Exception as e:
+        log_json("error", "db_ping_failed", error=str(e))
         return False
 
 

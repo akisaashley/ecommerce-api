@@ -15,7 +15,7 @@ class Settings:
 
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-    # Railway automatically injects MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE
+    # Railway automatically injects these - try both naming conventions
     MYSQL_HOST = os.getenv("MYSQLHOST", os.getenv("MYSQL_HOST", "localhost"))
     MYSQL_PORT = int(os.getenv("MYSQLPORT", os.getenv("MYSQL_PORT", "3306")))
     MYSQL_USER = os.getenv("MYSQLUSER", os.getenv("MYSQL_USER", "root"))
@@ -40,3 +40,6 @@ class Settings:
 
 
 settings = Settings()
+
+# Print database config for debugging (remove in production)
+print(f"Database config: Host={settings.MYSQL_HOST}, Port={settings.MYSQL_PORT}, Database={settings.MYSQL_DATABASE}, User={settings.MYSQL_USER}")
