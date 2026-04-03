@@ -15,19 +15,19 @@ class Settings:
 
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-    # Railway automatically injects these - try both naming conventions
+    # Railway automatically injects these variables
     MYSQL_HOST = os.getenv("MYSQLHOST", os.getenv("MYSQL_HOST", "localhost"))
     MYSQL_PORT = int(os.getenv("MYSQLPORT", os.getenv("MYSQL_PORT", "3306")))
     MYSQL_USER = os.getenv("MYSQLUSER", os.getenv("MYSQL_USER", "root"))
-    MYSQL_PASSWORD = os.getenv("MYSQLPASSWORD", os.getenv("MYSQL_PASSWORD", "password"))
+    MYSQL_PASSWORD = os.getenv("MYSQLPASSWORD", os.getenv("MYSQL_PASSWORD", ""))
     MYSQL_DATABASE = os.getenv("MYSQLDATABASE", os.getenv("MYSQL_DATABASE", "ecommerce_db"))
 
     MYSQL_POOL_NAME = os.getenv("MYSQL_POOL_NAME", "ecommerce_pool")
     MYSQL_POOL_SIZE = int(os.getenv("MYSQL_POOL_SIZE", "5"))
     MYSQL_POOL_RESET_SESSION = os.getenv("MYSQL_POOL_RESET_SESSION", "true").lower() == "true"
     MYSQL_CONNECT_TIMEOUT = int(os.getenv("MYSQL_CONNECT_TIMEOUT", "10"))
-    MYSQL_MAX_RETRIES = int(os.getenv("MYSQL_MAX_RETRIES", "3"))
-    MYSQL_RETRY_DELAY_SECONDS = float(os.getenv("MYSQL_RETRY_DELAY_SECONDS", "1.5"))
+    MYSQL_MAX_RETRIES = int(os.getenv("MYSQL_MAX_RETRIES", "5"))
+    MYSQL_RETRY_DELAY_SECONDS = float(os.getenv("MYSQL_RETRY_DELAY_SECONDS", "3"))
     AUTO_SEED_ON_STARTUP = os.getenv("AUTO_SEED_ON_STARTUP", "true").lower() == "true"
 
     CORS_ORIGINS = [
@@ -41,5 +41,11 @@ class Settings:
 
 settings = Settings()
 
-# Print database config for debugging (remove in production)
-print(f"Database config: Host={settings.MYSQL_HOST}, Port={settings.MYSQL_PORT}, Database={settings.MYSQL_DATABASE}, User={settings.MYSQL_USER}")
+# Print database config for debugging
+print(f"=== DATABASE CONFIGURATION ===")
+print(f"MYSQL_HOST: {settings.MYSQL_HOST}")
+print(f"MYSQL_PORT: {settings.MYSQL_PORT}")
+print(f"MYSQL_USER: {settings.MYSQL_USER}")
+print(f"MYSQL_DATABASE: {settings.MYSQL_DATABASE}")
+print(f"AUTO_SEED_ON_STARTUP: {settings.AUTO_SEED_ON_STARTUP}")
+print(f"==============================")

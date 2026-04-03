@@ -74,96 +74,31 @@ SCHEMA_SQL = [
     """,
 ]
 
-# Drop existing problematic columns if they exist
-DROP_COLUMNS_SQL = [
-    "ALTER TABLE users DROP COLUMN IF EXISTS status",
-    "ALTER TABLE products DROP COLUMN IF EXISTS status",
+# Simple INSERT statements without ON DUPLICATE KEY
+SEED_USERS = [
+    "INSERT IGNORE INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440000', 'john.doe@example.com', 'John Doe')",
+    "INSERT IGNORE INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440001', 'jane.smith@example.com', 'Jane Smith')",
+    "INSERT IGNORE INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440002', 'bob.johnson@example.com', 'Bob Johnson')",
+    "INSERT IGNORE INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams')",
+    "INSERT IGNORE INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown')",
 ]
 
-# Seed data without status column
-SEED_SQL = [
-    """
-    INSERT INTO users (uuid, email, full_name)
-    SELECT * FROM (SELECT 
-        '550e8400-e29b-41d4-a716-446655440000', 'john.doe@example.com', 'John Doe'
-    ) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'john.doe@example.com')
-    """,
-    """
-    INSERT INTO users (uuid, email, full_name)
-    SELECT * FROM (SELECT 
-        '550e8400-e29b-41d4-a716-446655440001', 'jane.smith@example.com', 'Jane Smith'
-    ) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'jane.smith@example.com')
-    """,
-    """
-    INSERT INTO users (uuid, email, full_name)
-    SELECT * FROM (SELECT 
-        '550e8400-e29b-41d4-a716-446655440002', 'bob.johnson@example.com', 'Bob Johnson'
-    ) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'bob.johnson@example.com')
-    """,
-    """
-    INSERT INTO users (uuid, email, full_name)
-    SELECT * FROM (SELECT 
-        '550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams'
-    ) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'alice.williams@example.com')
-    """,
-    """
-    INSERT INTO users (uuid, email, full_name)
-    SELECT * FROM (SELECT 
-        '550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown'
-    ) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'charlie.brown@example.com')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU001', 'Laptop Pro', 'High-performance laptop with 16GB RAM, 512GB SSD', 1299.99, 50) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU001')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU002', 'Wireless Mouse', 'Ergonomic wireless mouse with 2.4GHz connection', 29.99, 200) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU002')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU003', 'Mechanical Keyboard', 'RGB mechanical keyboard with blue switches', 89.99, 150) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU003')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU004', 'USB-C Hub', '7-in-1 USB-C hub with 4K HDMI output', 49.99, 100) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU004')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU005', 'Noise Cancelling Headphones', 'Premium noise cancelling headphones with 30hr battery', 199.99, 75) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU005')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU006', 'Smartphone Stand', 'Adjustable aluminum smartphone stand', 19.99, 300) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU006')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU007', 'External SSD 1TB', 'Portable 1TB SSD with USB 3.2', 119.99, 45) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU007')
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity)
-    SELECT * FROM (SELECT 'SKU008', 'Webcam HD', '1080p HD webcam with built-in microphone', 79.99, 60) AS tmp
-    WHERE NOT EXISTS (SELECT 1 FROM products WHERE sku = 'SKU008')
-    """,
+SEED_PRODUCTS = [
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU001', 'Laptop Pro', 'High-performance laptop with 16GB RAM, 512GB SSD', 1299.99, 50)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU002', 'Wireless Mouse', 'Ergonomic wireless mouse with 2.4GHz connection', 29.99, 200)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU003', 'Mechanical Keyboard', 'RGB mechanical keyboard with blue switches', 89.99, 150)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU004', 'USB-C Hub', '7-in-1 USB-C hub with 4K HDMI output', 49.99, 100)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU005', 'Noise Cancelling Headphones', 'Premium noise cancelling headphones with 30hr battery', 199.99, 75)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU006', 'Smartphone Stand', 'Adjustable aluminum smartphone stand', 19.99, 300)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU007', 'External SSD 1TB', 'Portable 1TB SSD with USB 3.2', 119.99, 45)",
+    "INSERT IGNORE INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU008', 'Webcam HD', '1080p HD webcam with built-in microphone', 79.99, 60)",
 ]
 
 
 def initialize_database():
     """
     Creates all required tables automatically when the application starts.
-    Safe to run multiple times because it uses IF NOT EXISTS.
+    Safe to run multiple times because it uses IF NOT EXISTS and INSERT IGNORE.
     """
     log_json("info", "database_initialization_started")
     
@@ -173,28 +108,23 @@ def initialize_database():
             # Create tables
             for statement in SCHEMA_SQL:
                 cursor.execute(statement)
-                log_json("info", "schema_statement_executed", statement_preview=statement[:100])
+                log_json("info", "schema_statement_executed")
 
             conn.commit()
-            
-            # Try to drop status columns if they exist (ignore errors)
-            for statement in DROP_COLUMNS_SQL:
-                try:
-                    cursor.execute(statement)
-                    conn.commit()
-                    log_json("info", "dropped_status_column", table=statement.split()[2])
-                except Exception as e:
-                    # Column might not exist, that's fine
-                    pass
+            log_json("info", "schema_creation_complete")
 
-            # Seed data if enabled
+            # Seed users if enabled
             if settings.AUTO_SEED_ON_STARTUP:
-                for statement in SEED_SQL:
+                for statement in SEED_USERS:
                     cursor.execute(statement)
-                    log_json("info", "seed_statement_executed", statement_preview=statement[:80])
-                
                 conn.commit()
-                log_json("info", "seed_data_inserted")
+                log_json("info", "users_seeded", count=len(SEED_USERS))
+
+                # Seed products
+                for statement in SEED_PRODUCTS:
+                    cursor.execute(statement)
+                conn.commit()
+                log_json("info", "products_seeded", count=len(SEED_PRODUCTS))
 
             log_json(
                 "info",
