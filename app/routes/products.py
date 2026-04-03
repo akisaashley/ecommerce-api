@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from decimal import Decimal
 
 from app.database.mysql_connector import execute_query
-from app.models.product import ProductCreate, ProductResponse, StockCheckRequest, StockCheckResponse, ProductUpdate
+from app.models.product import ProductCreate, StockCheckRequest, ProductUpdate
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
 

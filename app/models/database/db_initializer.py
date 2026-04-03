@@ -75,6 +75,7 @@ SCHEMA_SQL = [
 ]
 
 SEED_SQL = [
+    # Users seed data - NO status column
     """
     INSERT INTO users (uuid, email, full_name)
     VALUES
@@ -84,8 +85,10 @@ SEED_SQL = [
         ('550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams'),
         ('550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown')
     ON DUPLICATE KEY UPDATE
-        full_name = VALUES(full_name)
+        full_name = VALUES(full_name),
+        email = VALUES(email)
     """,
+    # Products seed data - NO status column
     """
     INSERT INTO products (sku, name, description, price, stock_quantity)
     VALUES
@@ -116,16 +119,21 @@ def initialize_database():
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
+            # Create tables
             for statement in SCHEMA_SQL:
                 cursor.execute(statement)
                 log_json("info", "schema_statement_executed", statement_preview=statement[:100])
 
+            conn.commit()
+
+            # Seed data if enabled
             if settings.AUTO_SEED_ON_STARTUP:
                 for statement in SEED_SQL:
                     cursor.execute(statement)
-                    log_json("info", "seed_statement_executed")
-
-            conn.commit()
+                    log_json("info", "seed_statement_executed", statement_preview=statement[:100])
+                
+                conn.commit()
+                log_json("info", "seed_data_inserted")
 
             log_json(
                 "info",
