@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class OrderStatus(str, Enum):
@@ -23,8 +23,9 @@ class OrderCreate(BaseModel):
     user_id: int = Field(..., gt=0)
     items: List[OrderItemCreate]
 
-    @validator('items')
-    def validate_items_not_empty(cls, v):
+    @field_validator('items')
+    @classmethod
+    def validate_items_not_empty(cls, v: List[OrderItemCreate]) -> List[OrderItemCreate]:
         if not v:
             raise ValueError('Order must contain at least one item')
         return v

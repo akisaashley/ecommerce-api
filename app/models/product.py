@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProductStatus(str, Enum):
@@ -16,8 +16,16 @@ class ProductBase(BaseModel):
     sku: str = Field(..., min_length=2, max_length=100)
     name: str = Field(..., min_length=2, max_length=255)
     description: Optional[str] = None
-    price: Decimal = Field(..., gt=0, decimal_places=2)
+    price: Decimal = Field(..., gt=0)
     stock_quantity: int = Field(default=0, ge=0)
+
+    @field_validator('price')
+    @classmethod
+    def validate_price_decimal(cls, v: Decimal) -> Decimal:
+        """Validate price has at most 2 decimal places"""
+        if v.as_tuple().exponent < -2:
+            raise ValueError('Price must have at most 2 decimal places')
+        return v
 
 
 class ProductCreate(ProductBase):
@@ -28,9 +36,17 @@ class ProductUpdate(BaseModel):
     sku: Optional[str] = Field(default=None, min_length=2, max_length=100)
     name: Optional[str] = Field(default=None, min_length=2, max_length=255)
     description: Optional[str] = None
-    price: Optional[Decimal] = Field(default=None, gt=0, decimal_places=2)
+    price: Optional[Decimal] = Field(default=None, gt=0)
     stock_quantity: Optional[int] = Field(default=None, ge=0)
     status: Optional[ProductStatus] = None
+
+    @field_validator('price')
+    @classmethod
+    def validate_price_decimal(cls, v: Optional[Decimal]) -> Optional[Decimal]:
+        """Validate price has at most 2 decimal places"""
+        if v is not None and v.as_tuple().exponent < -2:
+            raise ValueError('Price must have at most 2 decimal places')
+        return v
 
 
 class ProductResponse(ProductBase):
