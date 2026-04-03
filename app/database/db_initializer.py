@@ -2,9 +2,19 @@ from app.config import settings
 from app.database.mysql_connector import get_db_connection
 from app.middleware.logging import app_logger, log_json
 
+# Drop tables in reverse order (to handle foreign keys)
+DROP_TABLES_SQL = [
+    "DROP TABLE IF EXISTS inventory_transactions",
+    "DROP TABLE IF EXISTS order_items",
+    "DROP TABLE IF EXISTS orders",
+    "DROP TABLE IF EXISTS products",
+    "DROP TABLE IF EXISTS users",
+]
+
+# Create tables
 SCHEMA_SQL = [
     """
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         uuid VARCHAR(36) NOT NULL UNIQUE,
         email VARCHAR(255) NOT NULL UNIQUE,
@@ -16,7 +26,7 @@ SCHEMA_SQL = [
     )
     """,
     """
-    CREATE TABLE IF NOT EXISTS products (
+    CREATE TABLE products (
         id INT AUTO_INCREMENT PRIMARY KEY,
         sku VARCHAR(100) NOT NULL UNIQUE,
         name VARCHAR(255) NOT NULL,
@@ -30,7 +40,7 @@ SCHEMA_SQL = [
     )
     """,
     """
-    CREATE TABLE IF NOT EXISTS orders (
+    CREATE TABLE orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
         order_uuid VARCHAR(36) NOT NULL UNIQUE,
         user_id INT NOT NULL,
@@ -45,7 +55,7 @@ SCHEMA_SQL = [
     )
     """,
     """
-    CREATE TABLE IF NOT EXISTS order_items (
+    CREATE TABLE order_items (
         id INT AUTO_INCREMENT PRIMARY KEY,
         order_id INT NOT NULL,
         product_id INT NOT NULL,
@@ -59,7 +69,7 @@ SCHEMA_SQL = [
     )
     """,
     """
-    CREATE TABLE IF NOT EXISTS inventory_transactions (
+    CREATE TABLE inventory_transactions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         product_id INT NOT NULL,
         transaction_type ENUM('stock_in', 'stock_out', 'adjustment') NOT NULL,
@@ -74,60 +84,74 @@ SCHEMA_SQL = [
     """,
 ]
 
-SEED_SQL = [
-    """
-    INSERT INTO users (uuid, email, full_name, status)
-    VALUES
-        ('550e8400-e29b-41d4-a716-446655440000', 'john.doe@example.com', 'John Doe', 'active'),
-        ('550e8400-e29b-41d4-a716-446655440001', 'jane.smith@example.com', 'Jane Smith', 'active'),
-        ('550e8400-e29b-41d4-a716-446655440002', 'bob.johnson@example.com', 'Bob Johnson', 'active'),
-        ('550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams', 'active'),
-        ('550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown', 'active')
-    ON DUPLICATE KEY UPDATE
-        full_name = VALUES(full_name),
-        status = VALUES(status)
-    """,
-    """
-    INSERT INTO products (sku, name, description, price, stock_quantity, status)
-    VALUES
-        ('SKU001', 'Laptop Pro', 'High-performance laptop with 16GB RAM, 512GB SSD', 1299.99, 50, 'active'),
-        ('SKU002', 'Wireless Mouse', 'Ergonomic wireless mouse with 2.4GHz connection', 29.99, 200, 'active'),
-        ('SKU003', 'Mechanical Keyboard', 'RGB mechanical keyboard with blue switches', 89.99, 150, 'active'),
-        ('SKU004', 'USB-C Hub', '7-in-1 USB-C hub with 4K HDMI output', 49.99, 100, 'active'),
-        ('SKU005', 'Noise Cancelling Headphones', 'Premium noise cancelling headphones with 30hr battery', 199.99, 75, 'active'),
-        ('SKU006', 'Smartphone Stand', 'Adjustable aluminum smartphone stand', 19.99, 300, 'active'),
-        ('SKU007', 'External SSD 1TB', 'Portable 1TB SSD with USB 3.2', 119.99, 45, 'active'),
-        ('SKU008', 'Webcam HD', '1080p HD webcam with built-in microphone', 79.99, 60, 'active')
-    ON DUPLICATE KEY UPDATE
-        name = VALUES(name),
-        description = VALUES(description),
-        price = VALUES(price),
-        stock_quantity = VALUES(stock_quantity)
-    """
+# Seed data
+SEED_USERS = [
+    "INSERT INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440000', 'john.doe@example.com', 'John Doe')",
+    "INSERT INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440001', 'jane.smith@example.com', 'Jane Smith')",
+    "INSERT INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440002', 'bob.johnson@example.com', 'Bob Johnson')",
+    "INSERT INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams')",
+    "INSERT INTO users (uuid, email, full_name) VALUES ('550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown')",
+]
+
+SEED_PRODUCTS = [
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU001', 'Laptop Pro', 'High-performance laptop with 16GB RAM, 512GB SSD', 1299.99, 50)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU002', 'Wireless Mouse', 'Ergonomic wireless mouse with 2.4GHz connection', 29.99, 200)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU003', 'Mechanical Keyboard', 'RGB mechanical keyboard with blue switches', 89.99, 150)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU004', 'USB-C Hub', '7-in-1 USB-C hub with 4K HDMI output', 49.99, 100)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU005', 'Noise Cancelling Headphones', 'Premium noise cancelling headphones with 30hr battery', 199.99, 75)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU006', 'Smartphone Stand', 'Adjustable aluminum smartphone stand', 19.99, 300)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU007', 'External SSD 1TB', 'Portable 1TB SSD with USB 3.2', 119.99, 45)",
+    "INSERT INTO products (sku, name, description, price, stock_quantity) VALUES ('SKU008', 'Webcam HD', '1080p HD webcam with built-in microphone', 79.99, 60)",
 ]
 
 
 def initialize_database():
     """
-    Creates all required tables automatically when the application starts.
-    Safe to run multiple times because it uses IF NOT EXISTS and UPSERT-style seeding.
+    Drops all existing tables and recreates them fresh.
+    This ensures a clean slate on every startup.
     """
+    log_json("info", "database_initialization_started")
+    
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
+            # Drop existing tables
+            log_json("info", "dropping_existing_tables")
+            for statement in DROP_TABLES_SQL:
+                cursor.execute(statement)
+                log_json("info", "table_dropped", table=statement.split()[2])
+            
+            conn.commit()
+            log_json("info", "all_tables_dropped")
+
+            # Create fresh tables
+            log_json("info", "creating_fresh_tables")
             for statement in SCHEMA_SQL:
                 cursor.execute(statement)
-
-            if settings.AUTO_SEED_ON_STARTUP:
-                for statement in SEED_SQL:
-                    cursor.execute(statement)
-
+                log_json("info", "table_created", table=statement.split()[2].split()[0])
+            
             conn.commit()
+            log_json("info", "all_tables_created")
+
+            # Seed users
+            if settings.AUTO_SEED_ON_STARTUP:
+                log_json("info", "seeding_users")
+                for statement in SEED_USERS:
+                    cursor.execute(statement)
+                conn.commit()
+                log_json("info", "users_seeded", count=len(SEED_USERS))
+
+                # Seed products
+                log_json("info", "seeding_products")
+                for statement in SEED_PRODUCTS:
+                    cursor.execute(statement)
+                conn.commit()
+                log_json("info", "products_seeded", count=len(SEED_PRODUCTS))
 
             log_json(
                 "info",
                 "database_initialized",
-                message="Database tables verified/created successfully on startup"
+                message="Database tables recreated and seeded successfully on startup"
             )
         except Exception as exc:
             conn.rollback()
