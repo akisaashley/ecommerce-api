@@ -1,1477 +1,649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Management System | Opiyo Oscar</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      color-scheme: light;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Store | Akisa Ashley Maria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            color-scheme: light;
+        }
 
-    html {
-      scroll-behavior: smooth;
-    }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
 
-    body {
-      background:
-        radial-gradient(circle at top left, rgba(37,99,235,0.14), transparent 28%),
-        radial-gradient(circle at top right, rgba(16,185,129,0.10), transparent 24%),
-        linear-gradient(180deg, #f8fafc 0%, #eff6ff 40%, #eef2ff 100%);
-    }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+        }
 
-    .glass {
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    .tab-btn.active {
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      color: #ffffff;
-      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.28);
-    }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
 
-    .status-badge {
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: capitalize;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      white-space: nowrap;
-    }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
 
-    .metric-card {
-      position: relative;
-      overflow: hidden;
-    }
+        .status-active { background: #10b981; color: white; }
+        .status-pending { background: #f59e0b; color: white; }
+        .status-confirmed { background: #3b82f6; color: white; }
+        .status-shipped { background: #8b5cf6; color: white; }
+        .status-delivered { background: #10b981; color: white; }
+        .status-cancelled { background: #ef4444; color: white; }
 
-    .metric-card::after {
-      content: "";
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 999px;
-      top: -36px;
-      right: -36px;
-      background: rgba(255,255,255,0.14);
-    }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
 
-    .soft-input {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      border-radius: 1rem;
-      padding: 0.85rem 1rem;
-      outline: none;
-      transition: 0.2s ease;
-      font-size: 0.95rem;
-      color: #0f172a;
-    }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    .soft-input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-    }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
 
-    .soft-button {
-      border-radius: 1rem;
-      padding: 0.85rem 1.1rem;
-      font-weight: 700;
-      transition: 0.2s ease;
-    }
+        .tab-active {
+            background: #667eea;
+            color: white;
+        }
 
-    .soft-button:hover {
-      transform: translateY(-1px);
-    }
+        .tab-inactive {
+            background: white;
+            color: #4a5568;
+        }
 
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .table-scroll::-webkit-scrollbar {
-      height: 8px;
-      width: 8px;
-    }
-
-    .table-scroll::-webkit-scrollbar-thumb {
-      background: #94a3b8;
-      border-radius: 999px;
-    }
-
-    .data-table th {
-      font-size: 0.75rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: #475569;
-    }
-
-    .data-table tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .hero-gradient {
-      background:
-        linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #0284c7 100%);
-    }
-
-    .modal-backdrop {
-      background: rgba(2, 6, 23, 0.72);
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
-
-    .spinner {
-      border: 4px solid #dbeafe;
-      border-top: 4px solid #2563eb;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      animation: spin 1s linear infinite;
-    }
-
-    .banner-collapsed .banner-content {
-      display: none;
-    }
-
-    .banner-collapsed .banner-summary {
-      display: flex;
-    }
-
-    .banner-summary {
-      display: none;
-    }
-
-    .chart-box {
-      position: relative;
-      min-height: 320px;
-    }
-
-    @media (max-width: 640px) {
-      .chart-box {
-        min-height: 280px;
-      }
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+        .tab-inactive:hover {
+            background: #edf2f7;
+        }
+    </style>
 </head>
-<body class="min-h-screen text-slate-800">
-
-  <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-3 max-w-sm"></div>
-
-  <div id="loadingOverlay" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-slate-950/40">
-    <div class="glass p-6 rounded-2xl shadow-2xl flex items-center gap-4 border border-white/50">
-      <div class="spinner"></div>
-      <div>
-        <p class="font-semibold text-slate-900">Processing request...</p>
-        <p class="text-sm text-slate-600">Please wait a moment</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Collapsible Banner -->
-  <section id="developerBanner" class="bg-slate-950 text-white border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-3">
-      <div class="banner-summary items-center justify-between gap-3">
-        <div class="text-sm text-slate-200">
-          <span class="font-semibold">Application developed by Opiyo Oscar</span> • 2300701330 • 23/U/1330
-        </div>
-        <button onclick="toggleBanner()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg font-semibold">
-          Expand
-        </button>
-      </div>
-
-      <div class="banner-content">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div class="space-y-2">
-            <p class="text-xs uppercase tracking-[0.2em] text-blue-300 font-semibold">
-              Cloud Computing Project • Makerere University
-            </p>
-            <div class="text-sm md:text-base leading-relaxed text-slate-100">
-              <span class="font-bold">Application developed by Opiyo Oscar</span>,
-              Student Number: <span class="font-semibold">2300701330</span>,
-              Reg Number: <span class="font-semibold">23/U/1330</span>,
-              <span class="font-medium">Software Engineering Year 3 Sem II</span>.
-            </div>
-            <p class="text-sm text-slate-300">
-              This project demonstrates deployment, database integration, monitoring, CI/CD awareness, and responsive user interface design for the
-              <span class="font-semibold">Cloud Computing</span> course in the Software Engineering programme.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-3">
-            <a href="https://opiyo-oscar-student-management-system-production-7a3b.up.railway.app/" target="_blank"
-               class="text-sm bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl font-semibold">
-              Live App
-            </a>
-            <a href="https://github.com/OpiyoOscar01/opiyo-oscar-student-management-system.git" target="_blank"
-               class="text-sm bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl font-semibold">
-              GitHub Repository
-            </a>
-            <button onclick="toggleBanner()" class="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-semibold">
-              Minimise Banner
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <header class="hero-gradient text-white shadow-2xl">
-    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
-      <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-        <div>
-          <p class="uppercase tracking-[0.25em] text-xs text-cyan-200 font-semibold mb-2">
-            Railway PaaS Deployment • FastAPI • MySQL • Chart.js
-          </p>
-          <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">
-            Student Management System
-          </h1>
-          <p class="text-blue-100 mt-3 max-w-3xl text-sm md:text-base">
-            A modern, mobile-responsive academic management platform for handling students, courses,
-            enrollments, attendance, analytics, and cloud deployment evidence.
-          </p>
-        </div>
-
-        <div class="glass rounded-2xl p-4 text-slate-900 border border-white/40 min-w-[280px]">
-          <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">System Status</p>
-          <div class="mt-3 grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-slate-500">Backend</p>
-              <p id="healthStatus" class="font-bold text-emerald-600">Checking...</p>
-            </div>
-            <div>
-              <p class="text-sm text-slate-500">Time</p>
-              <p id="headerClock" class="font-bold text-slate-800">--</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <nav class="mt-6 flex flex-wrap gap-3">
-        <button class="tab-btn active px-4 md:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold" data-tab="dashboard">Dashboard</button>
-        <button class="tab-btn px-4 md:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold" data-tab="students">Students</button>
-        <button class="tab-btn px-4 md:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold" data-tab="courses">Courses</button>
-        <button class="tab-btn px-4 md:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold" data-tab="enrollments">Enrollments</button>
-        <button class="tab-btn px-4 md:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold" data-tab="attendance">Attendance</button>
-      </nav>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-
-    <!-- Dashboard -->
-    <section id="tab-dashboard" class="tab-content space-y-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="metric-card rounded-2xl p-5 text-white bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg">
-          <p class="text-blue-100 text-sm">Total Students</p>
-          <h2 id="statStudents" class="text-4xl font-extrabold mt-3">0</h2>
-          <p class="text-xs mt-3 text-blue-100">Registered student records</p>
-        </div>
-
-        <div class="metric-card rounded-2xl p-5 text-white bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
-          <p class="text-emerald-50 text-sm">Active Courses</p>
-          <h2 id="statCourses" class="text-4xl font-extrabold mt-3">0</h2>
-          <p class="text-xs mt-3 text-emerald-50">Courses available for enrollment</p>
-        </div>
-
-        <div class="metric-card rounded-2xl p-5 text-white bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-lg">
-          <p class="text-violet-50 text-sm">Active Enrollments</p>
-          <h2 id="statEnrollments" class="text-4xl font-extrabold mt-3">0</h2>
-          <p class="text-xs mt-3 text-violet-50">Current active enrollments</p>
-        </div>
-
-        <div class="metric-card rounded-2xl p-5 text-white bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg">
-          <p class="text-amber-50 text-sm">Avg Attendance Rate</p>
-          <h2 id="statAttendance" class="text-4xl font-extrabold mt-3">0%</h2>
-          <p class="text-xs mt-3 text-amber-50">Attendance summary across records</p>
-        </div>
-      </div>
-
-      <div class="grid xl:grid-cols-3 gap-6">
-        <div class="xl:col-span-2 glass rounded-2xl shadow-lg border border-white/50 p-5">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-            <div>
-              <h3 class="section-title">Course Capacity Overview</h3>
-              <p class="text-sm text-slate-500">Current enrollment compared with total capacity</p>
-            </div>
-            <button onclick="loadDashboard()" class="soft-button bg-blue-600 text-white hover:bg-blue-700">
-              Refresh Dashboard
-            </button>
-          </div>
-          <div class="chart-box">
-            <canvas id="courseCapacityChart"></canvas>
-          </div>
-        </div>
-
-        <div class="glass rounded-2xl shadow-lg border border-white/50 p-5">
-          <div class="mb-5">
-            <h3 class="section-title">Seat Utilization Breakdown</h3>
-            <p class="text-sm text-slate-500">Overall occupied versus available course seats</p>
-          </div>
-          <div class="chart-box">
-            <canvas id="utilizationChart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid xl:grid-cols-3 gap-6">
-        <div class="xl:col-span-2 glass rounded-2xl shadow-lg border border-white/50 p-5">
-          <div class="mb-5">
-            <h3 class="section-title">Enrollment Trend</h3>
-            <p class="text-sm text-slate-500">Enrollment activity grouped by recorded dates</p>
-          </div>
-          <div class="chart-box">
-            <canvas id="enrollmentTrendChart"></canvas>
-          </div>
-        </div>
-
-        <div class="glass rounded-2xl shadow-lg border border-white/50 p-5">
-          <div class="mb-4">
-            <h3 class="section-title">Recent Enrollments</h3>
-            <p class="text-sm text-slate-500">Latest student-course actions in the system</p>
-          </div>
-          <div id="recentEnrollmentsList" class="space-y-3"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Students -->
-    <section id="tab-students" class="tab-content hidden space-y-6">
-      <div class="grid xl:grid-cols-3 gap-6">
-        <div class="glass rounded-2xl shadow-lg border border-white/50 p-6">
-          <div class="mb-5">
-            <h3 class="section-title">Add New Student</h3>
-            <p class="text-sm text-slate-500">Capture student bio-data and institutional identity</p>
-          </div>
-
-          <form id="studentForm" class="space-y-4">
-            <input type="text" id="student_first_name" placeholder="First Name" class="soft-input" required />
-            <input type="text" id="student_last_name" placeholder="Last Name" class="soft-input" required />
-            <input type="email" id="student_email" placeholder="Email Address" class="soft-input" required />
-            <input type="text" id="student_phone" placeholder="Phone Number" class="soft-input" />
-            <input type="date" id="student_dob" class="soft-input" />
-            <button type="submit" class="soft-button w-full bg-blue-600 text-white hover:bg-blue-700">
-              Add Student
-            </button>
-          </form>
-        </div>
-
-        <div class="xl:col-span-2 glass rounded-2xl shadow-lg border border-white/50 p-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
-            <div>
-              <h3 class="section-title">Student Directory</h3>
-              <p class="text-sm text-slate-500">Search, update, and manage student records</p>
-            </div>
-            <input id="studentSearch" type="text" placeholder="Search by name, email, or student ID" class="soft-input lg:w-80" />
-          </div>
-
-          <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 bg-white">
-            <table class="min-w-full text-sm data-table">
-              <thead class="bg-slate-50 border-b">
-                <tr>
-                  <th class="px-4 py-3 text-left">Student ID</th>
-                  <th class="px-4 py-3 text-left">Full Name</th>
-                  <th class="px-4 py-3 text-left">Email</th>
-                  <th class="px-4 py-3 text-left">Status</th>
-                  <th class="px-4 py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="studentsTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Courses -->
-    <section id="tab-courses" class="tab-content hidden space-y-6">
-      <div class="grid xl:grid-cols-3 gap-6">
-        <div class="glass rounded-2xl shadow-lg border border-white/50 p-6">
-          <div class="mb-5">
-            <h3 class="section-title">Add New Course</h3>
-            <p class="text-sm text-slate-500">Create academic units and define capacity</p>
-          </div>
-
-          <form id="courseForm" class="space-y-4">
-            <input type="text" id="course_code" placeholder="Course Code e.g. CSC1201" class="soft-input" required />
-            <input type="text" id="course_name" placeholder="Course Name" class="soft-input" required />
-            <input type="number" id="course_credits" min="1" max="6" placeholder="Credits" class="soft-input" required />
-            <textarea id="course_description" placeholder="Course Description" class="soft-input min-h-[110px]"></textarea>
-            <input type="number" id="course_capacity" min="1" placeholder="Maximum Capacity" value="30" class="soft-input" />
-            <button type="submit" class="soft-button w-full bg-blue-600 text-white hover:bg-blue-700">
-              Add Course
-            </button>
-          </form>
-        </div>
-
-        <div class="xl:col-span-2 glass rounded-2xl shadow-lg border border-white/50 p-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
-            <div>
-              <h3 class="section-title">Course Catalog</h3>
-              <p class="text-sm text-slate-500">Maintain courses, credits, and enrollment limits</p>
-            </div>
-            <input id="courseSearch" type="text" placeholder="Search by course code or name" class="soft-input lg:w-80" />
-          </div>
-
-          <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 bg-white">
-            <table class="min-w-full text-sm data-table">
-              <thead class="bg-slate-50 border-b">
-                <tr>
-                  <th class="px-4 py-3 text-left">Code</th>
-                  <th class="px-4 py-3 text-left">Course Name</th>
-                  <th class="px-4 py-3 text-left">Credits</th>
-                  <th class="px-4 py-3 text-left">Enrollment</th>
-                  <th class="px-4 py-3 text-left">Status</th>
-                  <th class="px-4 py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="coursesTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Enrollments -->
-    <section id="tab-enrollments" class="tab-content hidden space-y-6">
-      <div class="glass rounded-2xl shadow-lg border border-white/50 p-6">
-        <div class="mb-5">
-          <h3 class="section-title">Enroll Student in Course</h3>
-          <p class="text-sm text-slate-500">Create enrollment records with duplicate prevention and capacity checks</p>
-        </div>
-
-        <div class="grid lg:grid-cols-3 gap-4">
-          <select id="enrollmentStudentSelect" class="soft-input"></select>
-          <select id="enrollmentCourseSelect" class="soft-input"></select>
-          <button onclick="createEnrollment()" class="soft-button bg-blue-600 text-white hover:bg-blue-700">
-            Enroll Student
-          </button>
-        </div>
-      </div>
-
-      <div class="glass rounded-2xl shadow-lg border border-white/50 p-6">
-        <div class="mb-5">
-          <h3 class="section-title">Enrollment Register</h3>
-          <p class="text-sm text-slate-500">Manage active, dropped, and completed course participation</p>
-        </div>
-
-        <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 bg-white">
-          <table class="min-w-full text-sm data-table">
-            <thead class="bg-slate-50 border-b">
-              <tr>
-                <th class="px-4 py-3 text-left">Student</th>
-                <th class="px-4 py-3 text-left">Course</th>
-                <th class="px-4 py-3 text-left">Enrollment Date</th>
-                <th class="px-4 py-3 text-left">Grade</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="enrollmentsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Attendance -->
-    <section id="tab-attendance" class="tab-content hidden space-y-6">
-      <div class="glass rounded-2xl shadow-lg border border-white/50 p-6">
-        <div class="mb-5">
-          <h3 class="section-title">Attendance Management</h3>
-          <p class="text-sm text-slate-500">Mark student attendance by course and date</p>
-        </div>
-
-        <div class="grid lg:grid-cols-3 gap-4 mb-5">
-          <select id="attendanceCourseSelect" class="soft-input"></select>
-          <input id="attendanceDate" type="date" class="soft-input" />
-          <button onclick="loadAttendanceStudents()" class="soft-button bg-slate-800 text-white hover:bg-slate-900">
-            Load Students
-          </button>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-4 mb-6">
-          <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-5">
-            <p class="text-sm text-emerald-700 font-medium">Present / Excused</p>
-            <p id="presentCount" class="text-3xl font-extrabold text-emerald-700 mt-2">0</p>
-          </div>
-          <div class="rounded-2xl bg-red-50 border border-red-200 p-5">
-            <p class="text-sm text-red-700 font-medium">Absent</p>
-            <p id="absentCount" class="text-3xl font-extrabold text-red-700 mt-2">0</p>
-          </div>
-          <div class="rounded-2xl bg-amber-50 border border-amber-200 p-5">
-            <p class="text-sm text-amber-700 font-medium">Late</p>
-            <p id="lateCount" class="text-3xl font-extrabold text-amber-700 mt-2">0</p>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 bg-white">
-          <table class="min-w-full text-sm data-table">
-            <thead class="bg-slate-50 border-b">
-              <tr>
-                <th class="px-4 py-3 text-left">Student</th>
-                <th class="px-4 py-3 text-left">Student ID</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Notes</th>
-              </tr>
-            </thead>
-            <tbody id="attendanceTableBody"></tbody>
-          </table>
-        </div>
-
-        <button onclick="saveAttendance()" class="soft-button mt-5 bg-blue-600 text-white hover:bg-blue-700">
-          Save Attendance
-        </button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="mt-10 bg-slate-950 text-slate-200">
-    <div class="max-w-7xl mx-auto px-4 py-5 space-y-2 text-sm">
-      <div class="flex flex-col lg:flex-row lg:justify-between gap-2">
-        <p>
-          Student Management System • Cloud Computing Project • Software Engineering • Makerere University
-        </p>
-        <p id="footerDateTime"></p>
-      </div>
-      <div class="text-slate-400">
-        Developed by <span class="font-semibold text-white">Opiyo Oscar</span> • Student Number: <span class="text-white">2300701330</span> •
-        Reg Number: <span class="text-white">23/U/1330</span> • Software Engineering Year 3 Sem II
-      </div>
-    </div>
-  </footer>
-
-  <!-- Student Edit Modal -->
-  <div id="studentModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6">
-      <div class="flex justify-between items-center mb-5">
-        <h3 class="text-xl font-bold text-slate-900">Edit Student</h3>
-        <button onclick="closeModal('studentModal')" class="text-slate-500 hover:text-slate-900 text-3xl leading-none">&times;</button>
-      </div>
-      <form id="studentEditForm" class="space-y-4">
-        <input type="hidden" id="edit_student_id" />
-        <input type="text" id="edit_student_first_name" placeholder="First Name" class="soft-input" required />
-        <input type="text" id="edit_student_last_name" placeholder="Last Name" class="soft-input" required />
-        <input type="email" id="edit_student_email" placeholder="Email" class="soft-input" required />
-        <input type="text" id="edit_student_phone" placeholder="Phone" class="soft-input" />
-        <input type="date" id="edit_student_dob" class="soft-input" />
-        <select id="edit_student_status" class="soft-input">
-          <option value="active">active</option>
-          <option value="inactive">inactive</option>
-          <option value="graduated">graduated</option>
-          <option value="suspended">suspended</option>
-        </select>
-        <button type="submit" class="soft-button w-full bg-blue-600 text-white hover:bg-blue-700">
-          Save Student Changes
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Course Edit Modal -->
-  <div id="courseModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6">
-      <div class="flex justify-between items-center mb-5">
-        <h3 class="text-xl font-bold text-slate-900">Edit Course</h3>
-        <button onclick="closeModal('courseModal')" class="text-slate-500 hover:text-slate-900 text-3xl leading-none">&times;</button>
-      </div>
-      <form id="courseEditForm" class="space-y-4">
-        <input type="hidden" id="edit_course_id" />
-        <input type="text" id="edit_course_code" placeholder="Course Code" class="soft-input" required />
-        <input type="text" id="edit_course_name" placeholder="Course Name" class="soft-input" required />
-        <input type="number" id="edit_course_credits" min="1" max="6" class="soft-input" required />
-        <textarea id="edit_course_description" placeholder="Description" class="soft-input min-h-[100px]"></textarea>
-        <input type="number" id="edit_course_capacity" min="1" class="soft-input" required />
-        <select id="edit_course_status" class="soft-input">
-          <option value="active">active</option>
-          <option value="inactive">inactive</option>
-        </select>
-        <button type="submit" class="soft-button w-full bg-blue-600 text-white hover:bg-blue-700">
-          Save Course Changes
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const API = "";
-    let courseCapacityChart = null;
-    let utilizationChart = null;
-    let enrollmentTrendChart = null;
-
-    function toggleBanner() {
-      const banner = document.getElementById("developerBanner");
-      banner.classList.toggle("banner-collapsed");
-      localStorage.setItem("developerBannerCollapsed", banner.classList.contains("banner-collapsed") ? "yes" : "no");
-    }
-
-    function restoreBannerState() {
-      const collapsed = localStorage.getItem("developerBannerCollapsed");
-      if (collapsed === "yes") {
-        document.getElementById("developerBanner").classList.add("banner-collapsed");
-      }
-    }
-
-    function showLoading(show = true) {
-      document.getElementById("loadingOverlay").classList.toggle("hidden", !show);
-    }
-
-    function showToast(message, type = "success") {
-      const container = document.getElementById("toastContainer");
-      const toast = document.createElement("div");
-
-      const tone = {
-        success: "bg-emerald-600",
-        error: "bg-red-600",
-        info: "bg-slate-800"
-      }[type] || "bg-slate-800";
-
-      toast.className = `${tone} text-white px-4 py-3 rounded-xl shadow-xl`;
-      toast.innerHTML = `<div class="font-medium">${message}</div>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3500);
-    }
-
-    async function apiFetch(url, options = {}) {
-      const response = await fetch(url, {
-        headers: { "Content-Type": "application/json" },
-        ...options,
-      });
-
-      let data = {};
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error("Invalid server response");
-      }
-
-      if (!response.ok) {
-        throw new Error(data.detail || data.message || "Request failed");
-      }
-      return data;
-    }
-
-    function statusBadge(status) {
-      const map = {
-        active: "bg-emerald-100 text-emerald-700",
-        inactive: "bg-slate-200 text-slate-700",
-        graduated: "bg-blue-100 text-blue-700",
-        suspended: "bg-red-100 text-red-700",
-        enrolled: "bg-emerald-100 text-emerald-700",
-        dropped: "bg-slate-200 text-slate-700",
-        completed: "bg-blue-100 text-blue-700",
-        present: "bg-emerald-100 text-emerald-700",
-        absent: "bg-red-100 text-red-700",
-        late: "bg-amber-100 text-amber-700",
-        excused: "bg-violet-100 text-violet-700",
-      };
-      return `<span class="status-badge ${map[status] || 'bg-slate-100 text-slate-700'}">${status}</span>`;
-    }
-
-    function formatDate(value) {
-      if (!value) return "-";
-      return new Date(value).toLocaleString();
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add("hidden");
-    }
-
-    function openModal(id) {
-      document.getElementById(id).classList.remove("hidden");
-    }
-
-    function safeText(value) {
-      return value == null ? "" : String(value);
-    }
-
-    function groupEnrollmentsByDate(enrollments) {
-      const grouped = {};
-      enrollments.forEach(item => {
-        const key = new Date(item.enrollment_date).toISOString().slice(0, 10);
-        grouped[key] = (grouped[key] || 0) + 1;
-      });
-
-      const labels = Object.keys(grouped).sort();
-      const values = labels.map(k => grouped[k]);
-      return { labels, values };
-    }
-
-    function createGradient(ctx, color1, color2) {
-      const gradient = ctx.createLinearGradient(0, 0, 0, 320);
-      gradient.addColorStop(0, color1);
-      gradient.addColorStop(1, color2);
-      return gradient;
-    }
-
-    function renderCourseCapacityChart(courses) {
-      const ctx = document.getElementById("courseCapacityChart").getContext("2d");
-      if (courseCapacityChart) courseCapacityChart.destroy();
-
-      const enrolledGradient = createGradient(ctx, "rgba(37,99,235,0.95)", "rgba(14,165,233,0.75)");
-      const capacityGradient = createGradient(ctx, "rgba(16,185,129,0.80)", "rgba(52,211,153,0.50)");
-
-      courseCapacityChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: courses.map(c => c.course_code),
-          datasets: [
-            {
-              label: "Current Enrollment",
-              data: courses.map(c => Number(c.current_enrollment)),
-              backgroundColor: enrolledGradient,
-              borderRadius: 12,
-              borderSkipped: false,
-              barThickness: 20
-            },
-            {
-              label: "Maximum Capacity",
-              data: courses.map(c => Number(c.max_capacity)),
-              backgroundColor: capacityGradient,
-              borderRadius: 12,
-              borderSkipped: false,
-              barThickness: 20
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: window.innerWidth < 768 ? "x" : "y",
-          interaction: { mode: "index", intersect: false },
-          plugins: {
-            legend: {
-              position: "top",
-              labels: {
-                usePointStyle: true,
-                pointStyle: "circle",
-                padding: 18
-              }
-            },
-            tooltip: {
-              backgroundColor: "#0f172a",
-              titleColor: "#fff",
-              bodyColor: "#e2e8f0",
-              padding: 12
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: {
-                color: "rgba(148,163,184,0.14)"
-              },
-              ticks: {
-                precision: 0
-              }
-            },
-            y: {
-              grid: {
-                display: window.innerWidth < 768
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function renderUtilizationChart(courses) {
-      const ctx = document.getElementById("utilizationChart").getContext("2d");
-      if (utilizationChart) utilizationChart.destroy();
-
-      const totalCapacity = courses.reduce((sum, c) => sum + Number(c.max_capacity || 0), 0);
-      const usedSeats = courses.reduce((sum, c) => sum + Number(c.current_enrollment || 0), 0);
-      const freeSeats = Math.max(totalCapacity - usedSeats, 0);
-
-      utilizationChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["Used Seats", "Available Seats"],
-          datasets: [{
-            data: [usedSeats, freeSeats],
-            backgroundColor: ["#2563eb", "#10b981"],
-            hoverBackgroundColor: ["#1d4ed8", "#059669"],
-            borderWidth: 0,
-            hoverOffset: 10
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "68%",
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: {
-                usePointStyle: true,
-                pointStyle: "circle",
-                padding: 18
-              }
-            },
-            tooltip: {
-              backgroundColor: "#0f172a",
-              padding: 12
-            }
-          }
-        }
-      });
-    }
-
-    function renderEnrollmentTrendChart(enrollments) {
-      const ctx = document.getElementById("enrollmentTrendChart").getContext("2d");
-      if (enrollmentTrendChart) enrollmentTrendChart.destroy();
-
-      const grouped = groupEnrollmentsByDate(enrollments);
-      const lineFill = createGradient(ctx, "rgba(124,58,237,0.32)", "rgba(244,114,182,0.05)");
-
-      enrollmentTrendChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: grouped.labels,
-          datasets: [{
-            label: "Enrollments",
-            data: grouped.values,
-            borderColor: "#7c3aed",
-            backgroundColor: lineFill,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#ec4899",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "top",
-              labels: {
-                usePointStyle: true,
-                pointStyle: "circle"
-              }
-            },
-            tooltip: {
-              backgroundColor: "#0f172a",
-              padding: 12
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 },
-              grid: {
-                color: "rgba(148,163,184,0.15)"
-              }
-            }
-          }
-        }
-      });
-    }
-
-    async function loadDashboard() {
-      showLoading(true);
-      try {
-        const [statsRes, enrollmentsRes] = await Promise.all([
-          apiFetch(`${API}/api/dashboard/stats`),
-          apiFetch(`${API}/api/enrollments`)
-        ]);
-
-        const d = statsRes.data;
-        const allEnrollments = enrollmentsRes.data || [];
-        const courseChartData = d.course_chart || [];
-
-        document.getElementById("statStudents").textContent = d.total_students ?? 0;
-        document.getElementById("statCourses").textContent = d.active_courses ?? 0;
-        document.getElementById("statEnrollments").textContent = d.total_enrollments ?? 0;
-        document.getElementById("statAttendance").textContent = `${d.avg_attendance_rate ?? 0}%`;
-
-        const list = document.getElementById("recentEnrollmentsList");
-        list.innerHTML = d.recent_enrollments && d.recent_enrollments.length
-          ? d.recent_enrollments.map(item => `
-              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="font-semibold text-slate-900">${item.student_name}</p>
-                    <p class="text-sm text-slate-500 mt-1">${item.course_code} • ${item.course_name}</p>
-                  </div>
-                  <div class="text-right">
-                    ${statusBadge(item.status)}
-                    <p class="text-xs text-slate-500 mt-2">${formatDate(item.enrollment_date)}</p>
-                  </div>
+<body class="font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                        🛍️ E-Commerce Store
+                    </h1>
+                    <div class="ml-10 hidden md:flex space-x-4">
+                        <button onclick="showTab('products')" id="tab-products-btn" class="px-3 py-2 rounded-md text-sm font-medium tab-active transition">Products</button>
+                        <button onclick="showTab('orders')" id="tab-orders-btn" class="px-3 py-2 rounded-md text-sm font-medium tab-inactive transition">My Orders</button>
+                        <button onclick="showTab('create-order')" id="tab-create-order-btn" class="px-3 py-2 rounded-md text-sm font-medium tab-inactive transition">Create Order</button>
+                    </div>
                 </div>
-              </div>
-            `).join("")
-          : `<div class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No recent enrollments yet.</div>`;
-
-        renderCourseCapacityChart(courseChartData);
-        renderUtilizationChart(courseChartData);
-        renderEnrollmentTrendChart(allEnrollments);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    async function checkHealth() {
-      try {
-        const res = await apiFetch(`${API}/health`);
-        document.getElementById("healthStatus").textContent = res.database === "up" ? "Online" : "Database Issue";
-        document.getElementById("healthStatus").className = res.database === "up"
-          ? "font-bold text-emerald-600"
-          : "font-bold text-red-600";
-      } catch {
-        document.getElementById("healthStatus").textContent = "Offline";
-        document.getElementById("healthStatus").className = "font-bold text-red-600";
-      }
-    }
-
-    async function loadStudents(search = "") {
-      try {
-        const url = search
-          ? `${API}/api/students?search=${encodeURIComponent(search)}`
-          : `${API}/api/students`;
-
-        const res = await apiFetch(url);
-        const tbody = document.getElementById("studentsTableBody");
-
-        tbody.innerHTML = res.data.map(student => `
-          <tr class="border-b border-slate-200">
-            <td class="px-4 py-4 font-semibold text-slate-700">${student.student_id}</td>
-            <td class="px-4 py-4">${student.first_name} ${student.last_name}</td>
-            <td class="px-4 py-4">${student.email}</td>
-            <td class="px-4 py-4">${statusBadge(student.status)}</td>
-            <td class="px-4 py-4">
-              <div class="flex flex-wrap gap-2">
-                <button
-                  onclick='openStudentEdit(${JSON.stringify(student).replace(/'/g, "&apos;")})'
-                  class="px-3 py-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 font-medium"
-                >Edit</button>
-                <button
-                  onclick="deleteStudent(${student.id})"
-                  class="px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium"
-                >Delete</button>
-              </div>
-            </td>
-          </tr>
-        `).join("");
-
-        await populateStudentDropdowns(res.data);
-      } catch (error) {
-        showToast(error.message, "error");
-      }
-    }
-
-    async function loadCourses(search = "") {
-      try {
-        const url = search
-          ? `${API}/api/courses?search=${encodeURIComponent(search)}`
-          : `${API}/api/courses`;
-
-        const res = await apiFetch(url);
-        const tbody = document.getElementById("coursesTableBody");
-
-        tbody.innerHTML = res.data.map(course => {
-          const utilization = course.max_capacity
-            ? Math.round((Number(course.current_enrollment) / Number(course.max_capacity)) * 100)
-            : 0;
-
-          let barColor = "bg-emerald-500";
-          if (utilization >= 80) barColor = "bg-red-500";
-          else if (utilization >= 60) barColor = "bg-amber-500";
-          else if (utilization >= 40) barColor = "bg-blue-500";
-
-          return `
-            <tr class="border-b border-slate-200">
-              <td class="px-4 py-4 font-semibold text-slate-700">${course.course_code}</td>
-              <td class="px-4 py-4">
-                <div class="font-medium text-slate-900">${course.course_name}</div>
-                <div class="text-xs text-slate-500 mt-1">${safeText(course.description || "No description")}</div>
-              </td>
-              <td class="px-4 py-4">${course.credits}</td>
-              <td class="px-4 py-4 min-w-[160px]">
-                <div class="font-medium">${course.current_enrollment}/${course.max_capacity}</div>
-                <div class="w-full h-2.5 bg-slate-200 rounded-full mt-2 overflow-hidden">
-                  <div class="h-full ${barColor} rounded-full" style="width:${Math.min(utilization, 100)}%"></div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500">Akisa Ashley Maria</p>
+                    <p class="text-xs text-gray-400">Student #2300705729</p>
                 </div>
-                <div class="text-xs text-slate-500 mt-1">${utilization}% full</div>
-              </td>
-              <td class="px-4 py-4">${statusBadge(course.status)}</td>
-              <td class="px-4 py-4">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    onclick='openCourseEdit(${JSON.stringify(course).replace(/'/g, "&apos;")})'
-                    class="px-3 py-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 font-medium"
-                  >Edit</button>
-                  <button
-                    onclick="deleteCourse(${course.id})"
-                    class="px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium"
-                  >Delete</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Products Tab -->
+        <div id="products-tab" class="tab-content">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-800">📦 Our Products</h2>
+                    <div class="flex gap-3">
+                        <input type="number" id="min-stock-filter" placeholder="Min Stock" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="text" id="search-product" placeholder="Search by name or SKU" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button onclick="loadProducts()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Apply Filter</button>
+                        <button onclick="resetFilters()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Reset</button>
+                    </div>
                 </div>
-              </td>
-            </tr>
-          `;
-        }).join("");
+            </div>
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="col-span-full flex justify-center py-12">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <div id="pagination" class="flex justify-center gap-2 mt-8"></div>
+        </div>
 
-        await populateCourseDropdowns(res.data);
-      } catch (error) {
-        showToast(error.message, "error");
-      }
-    }
+        <!-- Orders Tab -->
+        <div id="orders-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">📋 My Orders</h2>
+                <p class="text-gray-600 mt-1">View and track your order history</p>
+            </div>
+            <div id="orders-container" class="space-y-4">
+                <div class="col-span-full flex justify-center py-12">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
 
-    async function loadEnrollments() {
-      try {
-        const res = await apiFetch(`${API}/api/enrollments`);
-        const tbody = document.getElementById("enrollmentsTableBody");
+        <!-- Create Order Tab -->
+        <div id="create-order-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">🛒 Create New Order</h2>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select User</label>
+                    <select id="user-id" class="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="1">John Doe</option>
+                        <option value="2">Jane Smith</option>
+                        <option value="3">Bob Johnson</option>
+                        <option value="4">Alice Williams</option>
+                        <option value="5">Charlie Brown</option>
+                    </select>
+                </div>
 
-        tbody.innerHTML = res.data.map(item => `
-          <tr class="border-b border-slate-200">
-            <td class="px-4 py-4">${item.student_name}</td>
-            <td class="px-4 py-4">
-              <div class="font-medium">${item.course_name}</div>
-              <div class="text-xs text-slate-500 mt-1">${item.course_code}</div>
-            </td>
-            <td class="px-4 py-4">${formatDate(item.enrollment_date)}</td>
-            <td class="px-4 py-4">
-              <span class="inline-flex px-3 py-1 rounded-full bg-slate-100 font-semibold">${item.grade || "-"}</span>
-            </td>
-            <td class="px-4 py-4">${statusBadge(item.status)}</td>
-            <td class="px-4 py-4">
-              <div class="flex flex-wrap gap-2">
-                <button onclick="promptGrade(${item.id}, '${item.grade || ''}')" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium">Update Grade</button>
-                <button onclick="dropEnrollment(${item.id})" class="px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium">Drop</button>
-              </div>
-            </td>
-          </tr>
-        `).join("");
-      } catch (error) {
-        showToast(error.message, "error");
-      }
-    }
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Order Items</h3>
+                    <div id="order-items-list" class="space-y-3 mb-4">
+                        <p class="text-gray-500 text-center py-4">No items added yet. Click "Add Product" to start.</p>
+                    </div>
+                    <button onclick="openProductModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        + Add Product
+                    </button>
+                </div>
 
-    async function populateStudentDropdowns(students = null) {
-      try {
-        const data = students || (await apiFetch(`${API}/api/students`)).data;
-        const activeStudents = data.filter(s => s.status === "active");
-        const select = document.getElementById("enrollmentStudentSelect");
-        select.innerHTML = `<option value="">Select Student</option>` + activeStudents.map(s =>
-          `<option value="${s.id}">${s.student_id} - ${s.first_name} ${s.last_name}</option>`
-        ).join("");
-      } catch (error) {
-        console.error(error);
-      }
-    }
+                <div class="border-t pt-4 mb-6">
+                    <p class="text-xl font-bold text-gray-800">Total: $<span id="order-total">0.00</span></p>
+                </div>
 
-    async function populateCourseDropdowns(courses = null) {
-      try {
-        const data = courses || (await apiFetch(`${API}/api/courses`)).data;
-        const activeCourses = data.filter(c => c.status === "active");
-        const options = `<option value="">Select Course</option>` + activeCourses.map(c =>
-          `<option value="${c.id}">${c.course_code} - ${c.course_name}</option>`
-        ).join("");
+                <button onclick="submitOrder()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-semibold w-full md:w-auto">
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </div>
 
-        document.getElementById("enrollmentCourseSelect").innerHTML = options;
-        document.getElementById("attendanceCourseSelect").innerHTML = options;
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Add Product to Order</h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Product</label>
+                    <select id="modal-product-id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                    <input type="number" id="modal-quantity" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="addToOrder()" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Add to Order</button>
+                    <button onclick="closeProductModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    async function createEnrollment() {
-      const student_id = document.getElementById("enrollmentStudentSelect").value;
-      const course_id = document.getElementById("enrollmentCourseSelect").value;
+    <!-- Order Detail Modal -->
+    <div id="order-detail-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 p-6 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Order Details</h3>
+                <button onclick="closeOrderDetailModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="order-detail-content"></div>
+        </div>
+    </div>
 
-      if (!student_id || !course_id) {
-        showToast("Please select both student and course", "error");
-        return;
-      }
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/enrollments`, {
-          method: "POST",
-          body: JSON.stringify({
-            student_id: Number(student_id),
-            course_id: Number(course_id)
-          })
-        });
+    <script>
+        const API_BASE = '';
+        let currentPage = 1;
+        let currentMinStock = null;
+        let currentSearch = null;
+        let orderItems = [];
+        let productsList = [];
 
-        showToast("Enrollment created successfully");
-        await Promise.all([loadEnrollments(), loadDashboard(), loadCourses()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    async function dropEnrollment(id) {
-      if (!confirm("Are you sure you want to drop this enrollment?")) return;
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/enrollments/${id}`, { method: "DELETE" });
-        showToast("Enrollment dropped successfully");
-        await Promise.all([loadEnrollments(), loadDashboard(), loadCourses()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    async function promptGrade(id, currentGrade) {
-      const grade = prompt("Enter grade (A, B, C, D, F):", currentGrade || "");
-      if (!grade) return;
-
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/enrollments/${id}/grade`, {
-          method: "PUT",
-          body: JSON.stringify({ grade })
-        });
-        showToast("Grade updated successfully");
-        await loadEnrollments();
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    function openStudentEdit(student) {
-      document.getElementById("edit_student_id").value = student.id;
-      document.getElementById("edit_student_first_name").value = student.first_name || "";
-      document.getElementById("edit_student_last_name").value = student.last_name || "";
-      document.getElementById("edit_student_email").value = student.email || "";
-      document.getElementById("edit_student_phone").value = student.phone || "";
-      document.getElementById("edit_student_dob").value = student.date_of_birth ? String(student.date_of_birth).slice(0, 10) : "";
-      document.getElementById("edit_student_status").value = student.status || "active";
-      openModal("studentModal");
-    }
-
-    function openCourseEdit(course) {
-      document.getElementById("edit_course_id").value = course.id;
-      document.getElementById("edit_course_code").value = course.course_code || "";
-      document.getElementById("edit_course_name").value = course.course_name || "";
-      document.getElementById("edit_course_credits").value = course.credits || 3;
-      document.getElementById("edit_course_description").value = course.description || "";
-      document.getElementById("edit_course_capacity").value = course.max_capacity || 30;
-      document.getElementById("edit_course_status").value = course.status || "active";
-      openModal("courseModal");
-    }
-
-    async function deleteStudent(id) {
-      if (!confirm("Set this student as inactive?")) return;
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/students/${id}`, { method: "DELETE" });
-        showToast("Student marked inactive");
-        await Promise.all([loadStudents(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    async function deleteCourse(id) {
-      if (!confirm("Set this course as inactive?")) return;
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/courses/${id}`, { method: "DELETE" });
-        showToast("Course marked inactive");
-        await Promise.all([loadCourses(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    async function loadAttendanceStudents() {
-      const courseId = document.getElementById("attendanceCourseSelect").value;
-      if (!courseId) {
-        showToast("Please select a course", "error");
-        return;
-      }
-
-      showLoading(true);
-      try {
-        const res = await apiFetch(`${API}/api/enrollments/course/${courseId}`);
-        const tbody = document.getElementById("attendanceTableBody");
-        const activeRows = res.data.filter(item => item.status !== "dropped");
-
-        tbody.innerHTML = activeRows.map(item => `
-          <tr class="border-b border-slate-200">
-            <td class="px-4 py-4">${item.student_name}</td>
-            <td class="px-4 py-4">${item.student_code}</td>
-            <td class="px-4 py-4">
-              <select class="attendance-status soft-input !py-2 !rounded-lg" data-student-id="${item.student_id}">
-                <option value="present">present</option>
-                <option value="absent">absent</option>
-                <option value="late">late</option>
-                <option value="excused">excused</option>
-              </select>
-            </td>
-            <td class="px-4 py-4">
-              <input
-                type="text"
-                class="attendance-notes soft-input !py-2 !rounded-lg"
-                data-student-id="${item.student_id}"
-                placeholder="Optional notes"
-              />
-            </td>
-          </tr>
-        `).join("");
-
-        updateAttendanceSummary();
-        document.querySelectorAll(".attendance-status").forEach(el => {
-          el.addEventListener("change", updateAttendanceSummary);
-        });
-
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    function updateAttendanceSummary() {
-      const selects = [...document.querySelectorAll(".attendance-status")];
-      let present = 0, absent = 0, late = 0;
-
-      selects.forEach(s => {
-        if (s.value === "present" || s.value === "excused") present++;
-        if (s.value === "absent") absent++;
-        if (s.value === "late") late++;
-      });
-
-      document.getElementById("presentCount").textContent = present;
-      document.getElementById("absentCount").textContent = absent;
-      document.getElementById("lateCount").textContent = late;
-    }
-
-    async function saveAttendance() {
-      const course_id = document.getElementById("attendanceCourseSelect").value;
-      const attendance_date = document.getElementById("attendanceDate").value;
-
-      if (!course_id || !attendance_date) {
-        showToast("Please select course and date", "error");
-        return;
-      }
-
-      const rows = [...document.querySelectorAll(".attendance-status")].map(select => {
-        const student_id = Number(select.dataset.studentId);
-        const notesInput = document.querySelector(`.attendance-notes[data-student-id="${student_id}"]`);
-
-        return {
-          student_id,
-          course_id: Number(course_id),
-          attendance_date,
-          status: select.value,
-          notes: notesInput ? notesInput.value : ""
-        };
-      });
-
-      if (!rows.length) {
-        showToast("No students loaded for attendance", "error");
-        return;
-      }
-
-      showLoading(true);
-      try {
-        for (const row of rows) {
-          await apiFetch(`${API}/api/attendance`, {
-            method: "POST",
-            body: JSON.stringify(row)
-          });
+        // Helper Functions
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg mb-2 animate-bounce`;
+            toast.innerHTML = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
-        showToast("Attendance saved successfully");
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    }
 
-    document.getElementById("studentForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const payload = {
-        first_name: document.getElementById("student_first_name").value,
-        last_name: document.getElementById("student_last_name").value,
-        email: document.getElementById("student_email").value,
-        phone: document.getElementById("student_phone").value,
-        date_of_birth: document.getElementById("student_dob").value || null
-      };
+        function showLoading(show) {
+            // Implement loading state if needed
+        }
 
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/students`, {
-          method: "POST",
-          body: JSON.stringify(payload)
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleString();
+        }
+
+        function formatPrice(price) {
+            return parseFloat(price).toFixed(2);
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+
+            const btns = ['products', 'orders', 'create-order'];
+            btns.forEach(btn => {
+                const btnElement = document.getElementById(`tab-${btn}-btn`);
+                if (btn === tabName) {
+                    btnElement.classList.remove('tab-inactive');
+                    btnElement.classList.add('tab-active');
+                } else {
+                    btnElement.classList.remove('tab-active');
+                    btnElement.classList.add('tab-inactive');
+                }
+            });
+
+            if (tabName === 'products') loadProducts();
+            if (tabName === 'orders') loadOrders();
+            if (tabName === 'create-order') loadProductsForModal();
+        }
+
+        // Products Functions
+        async function loadProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="col-span-full flex justify-center py-12"><div class="loading-spinner"></div></div>';
+
+            const skip = (currentPage - 1) * 12;
+            let url = `${API_BASE}/api/products?skip=${skip}&limit=12`;
+            if (currentMinStock) url += `&min_stock=${currentMinStock}`;
+            if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to load products');
+                const data = await response.json();
+                displayProducts(data.data || []);
+                displayPagination(data.total, 12);
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<div class="col-span-full text-center text-red-600 py-12">Failed to load products. Please ensure the API is running.</div>';
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('products-container');
+            if (!products || products.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-600 py-12">No products found.</div>';
+                return;
+            }
+
+            container.innerHTML = products.map(product => `
+                <div class="product-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-lg font-bold text-gray-800">${escapeHtml(product.name)}</h3>
+                            <span class="status-badge status-active">${product.status}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">SKU: ${product.sku}</p>
+                        <p class="text-gray-600 mt-2 text-sm">${escapeHtml(product.description || 'No description')}</p>
+                        <p class="text-2xl font-bold text-purple-600 mt-3">$${formatPrice(product.price)}</p>
+                        <p class="text-sm ${product.stock_quantity < 10 ? 'text-red-600 font-semibold' : 'text-green-600'} mt-1">
+                            Stock: ${product.stock_quantity} units
+                        </p>
+                        <button onclick="checkStock(${product.id})" class="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Check Stock
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayPagination(total, limit) {
+            const totalPages = Math.ceil(total / limit);
+            const paginationDiv = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
+                return;
+            }
+
+            let buttons = '';
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                buttons += `<button onclick="goToPage(${i})" class="px-3 py-1 rounded ${i === currentPage ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'} transition">${i}</button>`;
+            }
+            paginationDiv.innerHTML = buttons;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadProducts();
+        }
+
+        function resetFilters() {
+            document.getElementById('min-stock-filter').value = '';
+            document.getElementById('search-product').value = '';
+            currentMinStock = null;
+            currentSearch = null;
+            currentPage = 1;
+            loadProducts();
+        }
+
+        async function checkStock(productId) {
+            const quantity = prompt('Enter quantity to check:', '1');
+            if (!quantity || isNaN(quantity)) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/products/${productId}/check-stock`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: parseInt(quantity) })
+                });
+                if (!response.ok) throw new Error('Stock check failed');
+                const data = await response.json();
+                const result = data.data;
+                if (result.is_available) {
+                    showToast(`✓ ${quantity} units available! Current stock: ${result.available_quantity}`, 'success');
+                } else {
+                    showToast(`✗ Only ${result.available_quantity} units available. Requested: ${quantity}`, 'error');
+                }
+            } catch (error) {
+                showToast('Error checking stock: ' + error.message, 'error');
+            }
+        }
+
+        // Orders Functions
+        async function loadOrders() {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = '<div class="flex justify-center py-12"><div class="loading-spinner"></div></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/orders?limit=50`);
+                if (!response.ok) throw new Error('Failed to load orders');
+                const data = await response.json();
+                displayOrders(data.data || []);
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<div class="text-center text-red-600 py-12">Failed to load orders.</div>';
+            }
+        }
+
+        function displayOrders(orders) {
+            const container = document.getElementById('orders-container');
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-600 py-12">No orders found. Create your first order!</div>';
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div onclick="viewOrderDetail(${order.id})" class="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">Order #${order.id}</p>
+                            <p class="text-xs text-gray-400">${order.order_uuid}</p>
+                        </div>
+                        <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
+                    </div>
+                    <p class="text-2xl font-bold text-purple-600 mt-3">$${formatPrice(order.total_amount)}</p>
+                    <p class="text-sm text-gray-500 mt-2">Created: ${formatDate(order.created_at)}</p>
+                </div>
+            `).join('');
+        }
+
+        async function viewOrderDetail(orderId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/orders/${orderId}`);
+                if (!response.ok) throw new Error('Failed to load order details');
+                const data = await response.json();
+                const order = data.data;
+                
+                const modalContent = document.getElementById('order-detail-content');
+                modalContent.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Order ID</p>
+                                <p class="font-semibold">${order.id}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Status</p>
+                                <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Order UUID</p>
+                            <p class="font-mono text-sm">${order.order_uuid}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">User ID</p>
+                            <p>${order.user_id}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total Amount</p>
+                            <p class="text-2xl font-bold text-purple-600">$${formatPrice(order.total_amount)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Created</p>
+                            <p>${formatDate(order.created_at)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Last Updated</p>
+                            <p>${formatDate(order.updated_at)}</p>
+                        </div>
+                        <div class="border-t pt-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Order Items</h4>
+                            <div class="space-y-2">
+                                ${order.items.map(item => `
+                                    <div class="flex justify-between items-center border-b pb-2">
+                                        <div>
+                                            <p class="font-medium">${escapeHtml(item.product_name)}</p>
+                                            <p class="text-sm text-gray-500">SKU: ${item.product_sku}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p>${item.quantity} x $${formatPrice(item.unit_price)}</p>
+                                            <p class="font-semibold">$${formatPrice(item.subtotal)}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('order-detail-modal').classList.remove('hidden');
+            } catch (error) {
+                showToast('Error loading order details: ' + error.message, 'error');
+            }
+        }
+
+        // Create Order Functions
+        async function loadProductsForModal() {
+            try {
+                const response = await fetch(`${API_BASE}/api/products?limit=100`);
+                if (!response.ok) throw new Error('Failed to load products');
+                const data = await response.json();
+                productsList = data.data || [];
+                populateProductSelect();
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function populateProductSelect() {
+            const select = document.getElementById('modal-product-id');
+            select.innerHTML = productsList.map(product => 
+                `<option value="${product.id}" data-price="${product.price}" data-name="${escapeHtml(product.name)}" data-stock="${product.stock_quantity}">
+                    ${escapeHtml(product.name)} - $${formatPrice(product.price)} (Stock: ${product.stock_quantity})
+                </option>`
+            ).join('');
+        }
+
+        function openProductModal() {
+            if (productsList.length === 0) {
+                loadProductsForModal().then(() => {
+                    document.getElementById('product-modal').classList.remove('hidden');
+                });
+            } else {
+                document.getElementById('product-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function addToOrder() {
+            const select = document.getElementById('modal-product-id');
+            const productId = parseInt(select.value);
+            const quantity = parseInt(document.getElementById('modal-quantity').value);
+            const selectedOption = select.options[select.selectedIndex];
+            const productName = selectedOption.getAttribute('data-name');
+            const price = parseFloat(selectedOption.getAttribute('data-price'));
+            const currentStock = parseInt(selectedOption.getAttribute('data-stock'));
+
+            if (!quantity || quantity < 1) {
+                showToast('Please enter a valid quantity', 'error');
+                return;
+            }
+
+            if (quantity > currentStock) {
+                showToast(`Only ${currentStock} units available in stock`, 'error');
+                return;
+            }
+
+            const existingItem = orderItems.find(item => item.product_id === productId);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                orderItems.push({ product_id: productId, quantity, product_name: productName, unit_price: price });
+            }
+
+            renderOrderItems();
+            closeProductModal();
+            document.getElementById('modal-quantity').value = '1';
+        }
+
+        function renderOrderItems() {
+            const container = document.getElementById('order-items-list');
+            if (orderItems.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No items added yet. Click "Add Product" to start.</p>';
+                document.getElementById('order-total').textContent = '0.00';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = orderItems.map((item, index) => {
+                const subtotal = item.quantity * item.unit_price;
+                total += subtotal;
+                return `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <div>
+                            <p class="font-medium">${escapeHtml(item.product_name)}</p>
+                            <p class="text-sm text-gray-500">$${formatPrice(item.unit_price)} × ${item.quantity}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <p class="font-semibold">$${formatPrice(subtotal)}</p>
+                            <button onclick="removeOrderItem(${index})" class="text-red-600 hover:text-red-800 text-xl">&times;</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('order-total').textContent = formatPrice(total);
+        }
+
+        function removeOrderItem(index) {
+            orderItems.splice(index, 1);
+            renderOrderItems();
+        }
+
+        async function submitOrder() {
+            const userId = parseInt(document.getElementById('user-id').value);
+            if (orderItems.length === 0) {
+                showToast('Please add at least one item to your order', 'error');
+                return;
+            }
+
+            const orderData = {
+                user_id: userId,
+                items: orderItems.map(item => ({
+                    product_id: item.product_id,
+                    quantity: item.quantity
+                }))
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create order');
+                }
+                const data = await response.json();
+                showToast(`Order #${data.data.id} created successfully! Total: $${formatPrice(data.data.total_amount)}`, 'success');
+                orderItems = [];
+                renderOrderItems();
+                showTab('orders');
+                loadOrders();
+            } catch (error) {
+                showToast('Error creating order: ' + error.message, 'error');
+            }
+        }
+
+        // Utility Functions
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function closeOrderDetailModal() {
+            document.getElementById('order-detail-modal').classList.add('hidden');
+        }
+
+        // Event Listeners
+        document.getElementById('min-stock-filter')?.addEventListener('change', (e) => {
+            currentMinStock = e.target.value ? parseInt(e.target.value) : null;
+            currentPage = 1;
+            loadProducts();
         });
-        e.target.reset();
-        showToast("Student added successfully");
-        await Promise.all([loadStudents(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    });
 
-    document.getElementById("courseForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const payload = {
-        course_code: document.getElementById("course_code").value,
-        course_name: document.getElementById("course_name").value,
-        credits: Number(document.getElementById("course_credits").value),
-        description: document.getElementById("course_description").value,
-        max_capacity: Number(document.getElementById("course_capacity").value)
-      };
-
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/courses`, {
-          method: "POST",
-          body: JSON.stringify(payload)
+        document.getElementById('search-product')?.addEventListener('input', (e) => {
+            currentSearch = e.target.value || null;
+            currentPage = 1;
+            loadProducts();
         });
-        e.target.reset();
-        document.getElementById("course_capacity").value = 30;
-        showToast("Course added successfully");
-        await Promise.all([loadCourses(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    });
 
-    document.getElementById("studentEditForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const id = document.getElementById("edit_student_id").value;
-      const payload = {
-        first_name: document.getElementById("edit_student_first_name").value,
-        last_name: document.getElementById("edit_student_last_name").value,
-        email: document.getElementById("edit_student_email").value,
-        phone: document.getElementById("edit_student_phone").value,
-        date_of_birth: document.getElementById("edit_student_dob").value || null,
-        status: document.getElementById("edit_student_status").value
-      };
-
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/students/${id}`, {
-          method: "PUT",
-          body: JSON.stringify(payload)
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
         });
-        closeModal("studentModal");
-        showToast("Student updated successfully");
-        await Promise.all([loadStudents(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    });
-
-    document.getElementById("courseEditForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const id = document.getElementById("edit_course_id").value;
-      const payload = {
-        course_code: document.getElementById("edit_course_code").value,
-        course_name: document.getElementById("edit_course_name").value,
-        credits: Number(document.getElementById("edit_course_credits").value),
-        description: document.getElementById("edit_course_description").value,
-        max_capacity: Number(document.getElementById("edit_course_capacity").value),
-        status: document.getElementById("edit_course_status").value
-      };
-
-      showLoading(true);
-      try {
-        await apiFetch(`${API}/api/courses/${id}`, {
-          method: "PUT",
-          body: JSON.stringify(payload)
-        });
-        closeModal("courseModal");
-        showToast("Course updated successfully");
-        await Promise.all([loadCourses(), loadDashboard()]);
-      } catch (error) {
-        showToast(error.message, "error");
-      } finally {
-        showLoading(false);
-      }
-    });
-
-    document.getElementById("studentSearch").addEventListener("input", (e) => {
-      loadStudents(e.target.value.trim());
-    });
-
-    document.getElementById("courseSearch").addEventListener("input", (e) => {
-      loadCourses(e.target.value.trim());
-    });
-
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        const tab = btn.dataset.tab;
-        document.querySelectorAll(".tab-content").forEach(section => section.classList.add("hidden"));
-        document.getElementById(`tab-${tab}`).classList.remove("hidden");
-
-        if (tab === "dashboard") await loadDashboard();
-        if (tab === "students") await loadStudents();
-        if (tab === "courses") await loadCourses();
-        if (tab === "enrollments") await Promise.all([loadEnrollments(), loadStudents(), loadCourses()]);
-        if (tab === "attendance") await loadCourses();
-      });
-    });
-
-    function updateClocks() {
-      const now = new Date().toLocaleString();
-      document.getElementById("footerDateTime").textContent = now;
-      document.getElementById("headerClock").textContent = now;
-    }
-
-    window.addEventListener("resize", () => {
-      if (document.getElementById("tab-dashboard") && !document.getElementById("tab-dashboard").classList.contains("hidden")) {
-        loadDashboard();
-      }
-    });
-
-    async function initPage() {
-      restoreBannerState();
-      document.getElementById("attendanceDate").value = new Date().toISOString().slice(0, 10);
-      updateClocks();
-      setInterval(updateClocks, 1000);
-      await Promise.all([
-        checkHealth(),
-        loadDashboard(),
-        loadStudents(),
-        loadCourses(),
-        loadEnrollments()
-      ]);
-    }
-
-    initPage();
-  </script>
+    </script>
 </body>
 </html>
