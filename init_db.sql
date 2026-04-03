@@ -1,79 +1,87 @@
-CREATE DATABASE IF NOT EXISTS student_management;
-USE student_management;
+CREATE DATABASE IF NOT EXISTS ecommerce_db;
+USE ecommerce_db;
 
-CREATE TABLE IF NOT EXISTS students (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id VARCHAR(20) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    date_of_birth DATE,
-    enrollment_date DATE DEFAULT (CURRENT_DATE),
-    status ENUM('active', 'inactive', 'graduated', 'suspended') DEFAULT 'active',
+    uuid VARCHAR(36) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    full_name VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
-    INDEX idx_student_id (student_id),
-    INDEX idx_status (status)
+    INDEX idx_uuid (uuid)
 );
 
-CREATE TABLE IF NOT EXISTS courses (
+CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    course_code VARCHAR(20) UNIQUE NOT NULL,
-    course_name VARCHAR(255) NOT NULL,
-    credits INT NOT NULL CHECK (credits BETWEEN 1 AND 6),
+    sku VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
-    max_capacity INT NOT NULL DEFAULT 30,
-    current_enrollment INT NOT NULL DEFAULT 0,
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    status ENUM('active', 'inactive', 'discontinued') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_course_code (course_code),
-    INDEX idx_status (status)
+    INDEX idx_sku (sku),
+    INDEX idx_stock (stock_quantity)
 );
 
-CREATE TABLE IF NOT EXISTS enrollments (
+CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    course_id INT NOT NULL,
-    enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    grade VARCHAR(2) DEFAULT NULL,
-    status ENUM('enrolled', 'dropped', 'completed') DEFAULT 'enrolled',
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_enrollment (student_id, course_id),
-    INDEX idx_student (student_id),
-    INDEX idx_course (course_id),
-    INDEX idx_status (status)
-);
-
-CREATE TABLE IF NOT EXISTS attendance (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    course_id INT NOT NULL,
-    attendance_date DATE NOT NULL,
-    status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
-    notes TEXT,
+    order_uuid VARCHAR(36) NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_attendance (student_id, course_id, attendance_date),
-    INDEX idx_student (student_id),
-    INDEX idx_date (attendance_date)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status)
 );
 
-INSERT INTO students (student_id, first_name, last_name, email, phone, date_of_birth, status)
-VALUES
-    ('STU-001', 'John', 'Doe', 'john.doe@example.com', '555-0101', '2000-05-15', 'active'),
-    ('STU-002', 'Jane', 'Smith', 'jane.smith@example.com', '555-0102', '2001-08-22', 'active'),
-    ('STU-003', 'Mike', 'Johnson', 'mike.j@example.com', '555-0103', '1999-11-30', 'active')
-ON DUPLICATE KEY UPDATE email = VALUES(email);
+CREATE TABLE IF NOT EXISTS order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    INDEX idx_order_id (order_id),
+    INDEX idx_product_id (product_id)
+);
 
-INSERT INTO courses (course_code, course_name, credits, description, max_capacity, current_enrollment)
-VALUES
-    ('CS101', 'Introduction to Programming', 3, 'Learn programming basics with Python', 30, 0),
-    ('CS102', 'Data Structures', 4, 'Advanced data structures and algorithms', 25, 0),
-    ('MATH101', 'Calculus I', 4, 'Differential and integral calculus', 35, 0),
-    ('ENG101', 'English Composition', 3, 'Academic writing and research', 30, 0)
-ON DUPLICATE KEY UPDATE course_name = VALUES(course_name);
+CREATE TABLE IF NOT EXISTS inventory_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    transaction_type ENUM('stock_in', 'stock_out', 'adjustment') NOT NULL,
+    quantity INT NOT NULL,
+    previous_stock INT NOT NULL,
+    new_stock INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product_id (product_id),
+    INDEX idx_created_at (created_at)
+);
+
+-- Seed Data
+INSERT INTO users (uuid, email, full_name, status) VALUES
+    ('550e8400-e29b-41d4-a716-446655440000', 'john.doe@example.com', 'John Doe', 'active'),
+    ('550e8400-e29b-41d4-a716-446655440001', 'jane.smith@example.com', 'Jane Smith', 'active'),
+    ('550e8400-e29b-41d4-a716-446655440002', 'bob.johnson@example.com', 'Bob Johnson', 'active'),
+    ('550e8400-e29b-41d4-a716-446655440003', 'alice.williams@example.com', 'Alice Williams', 'active'),
+    ('550e8400-e29b-41d4-a716-446655440004', 'charlie.brown@example.com', 'Charlie Brown', 'active')
+ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
+
+INSERT INTO products (sku, name, description, price, stock_quantity, status) VALUES
+    ('SKU001', 'Laptop Pro', 'High-performance laptop with 16GB RAM, 512GB SSD', 1299.99, 50, 'active'),
+    ('SKU002', 'Wireless Mouse', 'Ergonomic wireless mouse with 2.4GHz connection', 29.99, 200, 'active'),
+    ('SKU003', 'Mechanical Keyboard', 'RGB mechanical keyboard with blue switches', 89.99, 150, 'active'),
+    ('SKU004', 'USB-C Hub', '7-in-1 USB-C hub with 4K HDMI output', 49.99, 100, 'active'),
+    ('SKU005', 'Noise Cancelling Headphones', 'Premium noise cancelling headphones with 30hr battery', 199.99, 75, 'active'),
+    ('SKU006', 'Smartphone Stand', 'Adjustable aluminum smartphone stand', 19.99, 300, 'active'),
+    ('SKU007', 'External SSD 1TB', 'Portable 1TB SSD with USB 3.2', 119.99, 45, 'active'),
+    ('SKU008', 'Webcam HD', '1080p HD webcam with built-in microphone', 79.99, 60, 'active')
+ON DUPLICATE KEY UPDATE name = VALUES(name), price = VALUES(price);

@@ -11,7 +11,7 @@ request_id_ctx_var: ContextVar[str] = ContextVar("request_id", default="-")
 _request_counter = 0
 _counter_lock = Lock()
 
-app_logger = logging.getLogger("sms")
+app_logger = logging.getLogger("ecommerce")
 
 
 def configure_logging(level: str = "INFO"):

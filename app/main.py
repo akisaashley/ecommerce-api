@@ -10,11 +10,7 @@ from app.config import settings
 from app.database import initialize_database
 from app.database.mysql_connector import get_pool_status, init_connection_pool, ping_database
 from app.middleware.logging import RequestLoggingMiddleware, app_logger, configure_logging, log_json
-from app.routes.attendance import router as attendance_router
-from app.routes.courses import router as courses_router
-from app.routes.dashboard import router as dashboard_router
-from app.routes.enrollments import router as enrollments_router
-from app.routes.students import router as students_router
+from app.routes import health_router, products_router, orders_router
 
 
 @asynccontextmanager
@@ -29,6 +25,8 @@ async def lifespan(app: FastAPI):
         app_name=settings.APP_NAME,
         app_version=settings.APP_VERSION,
         environment=settings.APP_ENV,
+        developer="Akisa Ashley Maria",
+        student_id="2300705729",
     )
     yield
     log_json("info", "application_shutdown")
@@ -39,6 +37,17 @@ app = FastAPI(
     version=settings.APP_VERSION,
     debug=settings.DEBUG,
     lifespan=lifespan,
+    description="""
+    E-Commerce API - Production Ready
+    Developer: Akisa Ashley Maria (2300705729)
+    Makerere University - Software Engineering
+    
+    Features:
+    - Product management with stock tracking
+    - Order processing with transaction support
+    - Inventory transaction logging
+    - Automatic database seeding
+    """,
 )
 
 app.add_middleware(RequestLoggingMiddleware)
@@ -54,35 +63,32 @@ app.add_middleware(
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-app.include_router(students_router)
-app.include_router(courses_router)
-app.include_router(enrollments_router)
-app.include_router(attendance_router)
-app.include_router(dashboard_router)
+app.include_router(health_router)
+app.include_router(products_router)
+app.include_router(orders_router)
 
 
 @app.get("/")
 def serve_index():
-    return FileResponse(STATIC_DIR / "index.html")
-
-
-@app.get("/health")
-def health_check():
-    db_ok = ping_database()
-    status_code = status.HTTP_200_OK if db_ok else status.HTTP_503_SERVICE_UNAVAILABLE
-    return JSONResponse(
-        status_code=status_code,
-        content={
-            "success": db_ok,
-            "app": settings.APP_NAME,
-            "version": settings.APP_VERSION,
-            "environment": settings.APP_ENV,
-            "database": "up" if db_ok else "down",
-            "pool": get_pool_status(),
+    index_path = STATIC_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {
+        "message": "E-Commerce API",
+        "version": "1.0.0",
+        "developer": "Akisa Ashley Maria",
+        "student_id": "2300705729",
+        "institution": "Makerere University",
+        "endpoints": {
+            "health": "/health",
+            "products": "/api/products",
+            "orders": "/api/orders",
+            "docs": "/docs",
         },
-    )
+    }
 
 
 @app.exception_handler(Exception)

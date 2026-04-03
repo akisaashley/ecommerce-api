@@ -3,13 +3,13 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: sms_mysql
+    container_name: ecommerce_mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: student_management
-      MYSQL_USER: sms_user
-      MYSQL_PASSWORD: sms_password
+      MYSQL_DATABASE: ecommerce_db
+      MYSQL_USER: ecommerce_user
+      MYSQL_PASSWORD: ecommerce_password
     ports:
       - "3306:3306"
     volumes:
@@ -23,7 +23,7 @@ services:
 
   backend:
     build: .
-    container_name: sms_backend
+    container_name: ecommerce_backend
     restart: unless-stopped
     depends_on:
       mysql:
@@ -31,7 +31,7 @@ services:
     env_file:
       - .env
     environment:
-      APP_NAME: Student Management System
+      APP_NAME: E-Commerce API
       APP_VERSION: 1.0.0
       APP_ENV: development
       DEBUG: "true"
@@ -39,13 +39,14 @@ services:
       PORT: 8000
       MYSQLHOST: mysql
       MYSQLPORT: 3306
-      MYSQLUSER: sms_user
-      MYSQLPASSWORD: sms_password
-      MYSQLDATABASE: student_management
-      MYSQL_POOL_NAME: sms_pool
+      MYSQLUSER: ecommerce_user
+      MYSQLPASSWORD: ecommerce_password
+      MYSQLDATABASE: ecommerce_db
+      MYSQL_POOL_NAME: ecommerce_pool
       MYSQL_POOL_SIZE: 5
       LOG_LEVEL: INFO
       CORS_ORIGINS: "*"
+      AUTO_SEED_ON_STARTUP: "true"
     ports:
       - "8000:8000"
     volumes:
